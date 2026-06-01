@@ -1,0 +1,38 @@
+name,team,league,position,age,nationality,market_value_m,goals,assists
+Julian Alvarez,Atletico Madrid,La Liga,Delantero,25,Argentina,90,17,6
+Viktor Tsygankov,Girona,La Liga,Delantero,27,Ukraine,30,8,7
+Takefusa Kubo,Real Sociedad,La Liga,Delantero,24,Japan,50,7,5
+Pedri,Barcelona,La Liga,Centrocampista,22,Spain,100,4,5
+Alex Baena,Villarreal,La Liga,Centrocampista,23,Spain,50,5,14
+Mikel Merino,Real Sociedad,La Liga,Centrocampista,28,Spain,40,5,3
+Pau Cubarsi,Barcelona,La Liga,Defensa,18,Spain,70,1,2
+Dani Vivian,Athletic Club,La Liga,Defensa,25,Spain,35,2,1
+Miguel Gutierrez,Girona,La Liga,Defensa,23,Spain,30,2,7
+Unai Simon,Athletic Club,La Liga,Portero,27,Spain,30,0,0
+Giorgi Mamardashvili,Valencia,La Liga,Portero,24,Georgia,35,0,0
+Alexander Isak,Newcastle United,Premier League,Delantero,25,Sweden,100,21,2
+Bryan Mbeumo,Brentford,Premier League,Delantero,25,Cameroon,55,9,6
+Yoane Wissa,Brentford,Premier League,Delantero,28,DR Congo,35,12,3
+Bruno Guimaraes,Newcastle United,Premier League,Centrocampista,27,Brazil,80,7,8
+Morgan Gibbs-White,Nottingham Forest,Premier League,Centrocampista,25,England,40,5,10
+Marc Guehi,Crystal Palace,Premier League,Defensa,24,England,45,1,1
+Jarrad Branthwaite,Everton,Premier League,Defensa,22,England,40,3,0
+David Raya,Arsenal,Premier League,Portero,29,Spain,40,0,0
+Lautaro Martinez,Inter,Serie A,Delantero,27,Argentina,110,24,3
+Marcus Thuram,Inter,Serie A,Delantero,27,France,60,13,7
+Nicolo Barella,Inter,Serie A,Centrocampista,28,Italy,80,2,6
+Teun Koopmeiners,Juventus,Serie A,Centrocampista,27,Netherlands,50,12,5
+Alessandro Bastoni,Inter,Serie A,Defensa,26,Italy,70,1,4
+Michele Di Gregorio,Juventus,Serie A,Portero,27,Italy,20,0,0
+Benjamin Sesko,RB Leipzig,Bundesliga,Delantero,21,Slovenia,50,14,2
+Victor Boniface,Bayer Leverkusen,Bundesliga,Delantero,24,Nigeria,45,14,8
+Florian Wirtz,Bayer Leverkusen,Bundesliga,Centrocampista,22,Germany,130,11,11
+Xavi Simons,RB Leipzig,Bundesliga,Centrocampista,22,Netherlands,80,8,11
+Jonathan Tah,Bayer Leverkusen,Bundesliga,Defensa,29,Germany,30,4,1
+Gregor Kobel,Borussia Dortmund,Bundesliga,Portero,27,Switzerland,40,0,0
+Jonathan David,Lille,Ligue 1,Delantero,25,Canada,45,19,4
+Bradley Barcola,Paris Saint-Germain,Ligue 1,Delantero,22,France,60,4,7
+Warren Zaire-Emery,Paris Saint-Germain,Ligue 1,Centrocampista,19,France,60,3,5
+Youssouf Fofana,Monaco,Ligue 1,Centrocampista,26,France,30,4,4
+Jean-Clair Todibo,Nice,Ligue 1,Defensa,25,France,35,0,1
+Lucas Chevalier,Lille,Ligue 1,Portero,23,France,30,0,0
