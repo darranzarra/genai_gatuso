@@ -98,37 +98,49 @@ def clave_configurada(nombre: str) -> bool:
     return bool(os.getenv(nombre, "").strip())
 
 
-OPENAI_CONFIGURADA = clave_configurada("OPENAI_API_KEY")
+OPENAI_CONFIGURADA = clave_configurada("OPENAI_API_KEY") or clave_configurada("GROQ_API_KEY")
 API_FOOTBALL_CONFIGURADA = clave_configurada("API_FOOTBALL_KEY")
 
 
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown('<div class="main-title">⚽ SCOUT<br>AGENT</div>', unsafe_allow_html=True)
-    st.markdown('<div class="main-subtitle">Powered by GPT-4o + LangChain</div>', unsafe_allow_html=True)
+    llm_label = "LLaMA 3.3 (Groq)" if clave_configurada("GROQ_API_KEY") else "GPT-4o"
+    st.markdown(f'<div class="main-subtitle">Powered by {llm_label} + LangChain</div>', unsafe_allow_html=True)
 
     st.markdown("---")
 
-    st.markdown('<div class="sidebar-label">Contexto del equipo</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sidebar-label">Contexto del equipo (opcional)</div>', unsafe_allow_html=True)
     equipo = st.text_input("Equipo", placeholder="Ej: Real Madrid", label_visibility="collapsed")
     posicion = st.selectbox(
         "Posición buscada",
-        ["Delantero", "Centrocampista", "Defensa", "Portero"],
+        ["Cualquiera", "Delantero", "Centrocampista", "Defensa", "Portero"],
         label_visibility="collapsed"
     )
+    usar_presupuesto = st.checkbox("Limitar presupuesto", value=False)
     presupuesto = st.number_input(
         "Presupuesto máximo (M€)",
         min_value=0,
         max_value=300,
         value=80,
         step=5,
-        label_visibility="collapsed"
+        label_visibility="collapsed",
+        disabled=not usar_presupuesto
     )
     liga = st.selectbox(
         "Liga",
-        ["La Liga", "Premier League", "Serie A", "Bundesliga", "Ligue 1"],
+        ["Todas las ligas", "La Liga", "Premier League", "Serie A", "Bundesliga", "Ligue 1"],
         label_visibility="collapsed"
     )
+
+    _pos_btn = posicion if posicion != "Cualquiera" else "jugador"
+    _liga_btn = liga if liga != "Todas las ligas" else "cualquier liga"
+    _presupuesto_btn = f" con máximo {presupuesto}M€" if usar_presupuesto else ""
+    _equipo_btn = f" para {equipo}" if equipo else ""
+    if st.button("🔍 Buscar con estos filtros", use_container_width=True, type="primary"):
+        st.session_state.consulta_rapida = (
+            f"Recomienda un {_pos_btn.lower()}{_equipo_btn}{_presupuesto_btn} en {_liga_btn}"
+        )
 
     st.markdown("---")
 
@@ -136,8 +148,8 @@ with st.sidebar:
     if OPENAI_CONFIGURADA:
         usar_agente = st.toggle(
             "Usar agente LangChain",
-            value=API_FOOTBALL_CONFIGURADA,
-            help="Requiere OPENAI_API_KEY. Si falta API_FOOTBALL_KEY, las tools usan el CSV local.",
+            value=True,
+            help="Requiere OPENAI_API_KEY o GROQ_API_KEY. Si falta API_FOOTBALL_KEY, las tools usan el CSV local.",
         )
     else:
         usar_agente = False
@@ -153,9 +165,12 @@ with st.sidebar:
 
     st.markdown('<div class="sidebar-label">Consultas rápidas</div>', unsafe_allow_html=True)
 
+    _pos = posicion if posicion != "Cualquiera" else "jugador"
+    _liga = liga if liga != "Todas las ligas" else "Europa"
+    _presupuesto_txt = f"con máximo {presupuesto}M€ " if usar_presupuesto else ""
     consultas = [
-        f"Recomienda un {posicion.lower()} para {equipo or 'mi equipo'} con máximo {presupuesto}M€ en {liga}",
-        f"¿Quién es el mejor {posicion.lower()} de {liga} esta temporada?",
+        f"Recomienda un {_pos.lower()} para {equipo or 'mi equipo'} {_presupuesto_txt}en {_liga}",
+        f"¿Quién es el mejor {_pos.lower()} de {_liga} esta temporada?",
         "Compara a Lewandowski y Benzema",
         "¿Cuánto vale Pedri en el mercado?",
     ]
@@ -181,7 +196,7 @@ with st.sidebar:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-if usar_agente and "agente" not in st.session_state:
+if usar_agente and st.session_state.get("agente") is None:
     try:
         st.session_state.agente = crear_agente()
         st.session_state.agent_error = None
@@ -199,7 +214,10 @@ if st.session_state.get("agent_error"):
     st.warning(st.session_state.agent_error)
 
 if not usar_agente:
-    texto_demo, tabla_demo = recomendar_fichajes_local(posicion, presupuesto, liga, limite=10)
+    _pos_filtro = None if posicion == "Cualquiera" else posicion
+    _liga_filtro = "todas" if liga == "Todas las ligas" else liga
+    _presupuesto_filtro = presupuesto if usar_presupuesto else 9999
+    texto_demo, tabla_demo = recomendar_fichajes_local(_pos_filtro, _presupuesto_filtro, _liga_filtro, limite=10)
     st.markdown("### Recomendaciones demo")
     if tabla_demo.empty:
         st.info(texto_demo)
@@ -236,13 +254,19 @@ if prompt:
                     })
                     contenido = respuesta.get("output", "No se pudo generar una respuesta.")
                 except Exception as e:
+                    _pos_filtro = None if posicion == "Cualquiera" else posicion
+                    _liga_filtro = "todas" if liga == "Todas las ligas" else liga
+                    _presupuesto_filtro = presupuesto if usar_presupuesto else 9999
                     contenido = (
                         "No se pudo usar el agente avanzado. "
-                        f"Uso el modo demo local.\n\n{recomendar_fichajes_local(posicion, presupuesto, liga)[0]}\n\n"
+                        f"Uso el modo demo local.\n\n{recomendar_fichajes_local(_pos_filtro, _presupuesto_filtro, _liga_filtro)[0]}\n\n"
                         f"Detalle técnico: {str(e)}"
                     )
             else:
-                contenido = recomendar_fichajes_local(posicion, presupuesto, liga)[0]
+                _pos_filtro = None if posicion == "Cualquiera" else posicion
+                _liga_filtro = "todas" if liga == "Todas las ligas" else liga
+                _presupuesto_filtro = presupuesto if usar_presupuesto else 9999
+                contenido = recomendar_fichajes_local(_pos_filtro, _presupuesto_filtro, _liga_filtro)[0]
 
         st.markdown(contenido)
 

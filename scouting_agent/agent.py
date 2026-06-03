@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 PROJECT_DIR = os.path.dirname(__file__)
 load_dotenv(os.path.join(PROJECT_DIR, ".env"))
 
+from langchain_groq import ChatGroq
 from langchain_openai import ChatOpenAI
 from langchain.agents import AgentExecutor, create_openai_tools_agent
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -28,23 +29,30 @@ Cuando el usuario te pida jugadores o fichajes, SIEMPRE:
 Responde siempre en español y con un tono profesional pero accesible."""
 
 
-def openai_configurada() -> bool:
+def llm_configurado() -> bool:
     """Indica si se puede inicializar el agente LangChain."""
-    return bool(os.getenv("OPENAI_API_KEY", "").strip())
+    return bool(os.getenv("GROQ_API_KEY", "").strip() or os.getenv("OPENAI_API_KEY", "").strip())
 
 
 def crear_agente():
     """Inicializa y devuelve el agente con todas las tools registradas."""
-    if not openai_configurada():
+    if not llm_configurado():
         raise RuntimeError(
-            "OPENAI_API_KEY no está configurada. Usa el modo demo local con el CSV."
+            "No hay API key configurada. Añade GROQ_API_KEY o OPENAI_API_KEY al .env."
         )
 
-    llm = ChatOpenAI(
-        model="gpt-4o",
-        temperature=0.2,
-        api_key=os.getenv("OPENAI_API_KEY")
-    )
+    if os.getenv("GROQ_API_KEY", "").strip():
+        llm = ChatGroq(
+            model="llama-3.3-70b-versatile",
+            temperature=0.2,
+            api_key=os.getenv("GROQ_API_KEY")
+        )
+    else:
+        llm = ChatOpenAI(
+            model="gpt-4o",
+            temperature=0.2,
+            api_key=os.getenv("OPENAI_API_KEY")
+        )
 
     tools = [
         buscar_jugadores,
