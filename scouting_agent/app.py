@@ -155,9 +155,9 @@ with st.sidebar:
         usar_agente = False
 
     if usar_agente and API_FOOTBALL_CONFIGURADA:
-        st.caption("Agente avanzado con OpenAI y API-Football.")
+        st.caption("Agente avanzado con Groq y API-Football.")
     elif usar_agente:
-        st.caption("Agente LangChain con fallback local en CSV.")
+        st.caption("Agente LangChain (Groq) con datos del CSV local.")
     else:
         st.caption("Demo local con data/market_values.csv.")
 
