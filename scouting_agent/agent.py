@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 
 PROJECT_DIR = os.path.dirname(__file__)
-load_dotenv(os.path.join(PROJECT_DIR, ".env"))
+load_dotenv(os.path.join(PROJECT_DIR, ".env"), override=True)
 
 from langchain_groq import ChatGroq
 from langchain.agents import AgentExecutor, create_tool_calling_agent

@@ -46,11 +46,16 @@ def recomendar_fichajes_local(
 ) -> tuple[str, pd.DataFrame]:
     """Recomienda fichajes usando solo el CSV local."""
     filtrado, columnas = _filtrar_dataset_local(posicion, liga, presupuesto_max)
+    posicion_txt = posicion or "cualquier posición"
+    presupuesto_num = float(presupuesto_max)
+    presupuesto_txt = (
+        "sin límite" if presupuesto_num >= 9999 else f"{presupuesto_num:g}M€"
+    )
 
     if filtrado.empty:
         return (
-            f"No hay candidatos en el CSV para {posicion} en {liga} "
-            f"con presupuesto <= {presupuesto_max}M€.",
+            f"No hay candidatos en el CSV para {posicion_txt} en {liga} "
+            f"con presupuesto {presupuesto_txt}.",
             pd.DataFrame(),
         )
 
@@ -106,7 +111,7 @@ def recomendar_fichajes_local(
     )
 
     lineas = [
-        f"Recomendaciones demo — {posicion} | {liga} | Presupuesto máximo: {presupuesto_max}M€"
+        f"Recomendaciones demo — {posicion_txt} | {liga} | Presupuesto: {presupuesto_txt}"
     ]
     for i, (_, fila) in enumerate(tabla.iterrows(), 1):
         nombre = fila.get("Jugador", "N/A")

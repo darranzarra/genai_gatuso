@@ -93,20 +93,30 @@ def _filtrar_dataset_local(
         filtrado[col_valor] = _serie_numerica(filtrado[col_valor])
         if presupuesto_max is not None:
             filtrado = filtrado[filtrado[col_valor] <= float(presupuesto_max)]
+            if filtrado.empty:
+                return filtrado.copy(), columnas
 
-    if posicion and col_posicion:
+    if posicion and col_posicion and col_posicion in filtrado.columns:
         posicion_objetivo = _normalizar_posicion(posicion)
-        filtrado = filtrado[
+        mascara_posicion = (
             filtrado[col_posicion].apply(
                 lambda valor: _normalizar_posicion(valor) == posicion_objetivo
             )
-        ]
+            .fillna(False)
+            .astype(bool)
+        )
+        filtrado = filtrado.loc[mascara_posicion]
+        if filtrado.empty:
+            return filtrado.copy(), columnas
 
-    if liga and _normalizar_texto(liga) != "todas" and col_liga:
+    if liga and _normalizar_texto(liga) != "todas" and col_liga and col_liga in filtrado.columns:
         liga_objetivo = _normalizar_texto(liga)
-        filtrado = filtrado[
+        mascara_liga = (
             filtrado[col_liga].apply(lambda valor: liga_objetivo in _normalizar_texto(valor))
-        ]
+            .fillna(False)
+            .astype(bool)
+        )
+        filtrado = filtrado.loc[mascara_liga]
 
     return filtrado.copy(), columnas
 
