@@ -1,10 +1,13 @@
 import os
+import re
+import unicodedata
+from typing import Optional
 
 import streamlit as st
 from dotenv import load_dotenv
 
 PROJECT_DIR = os.path.dirname(__file__)
-load_dotenv(os.path.join(PROJECT_DIR, ".env"))
+load_dotenv(os.path.join(PROJECT_DIR, ".env"), override=True)
 
 from agent import crear_agente, convertir_historial
 from tools.recomendar_fichajes import recomendar_fichajes_local
@@ -96,6 +99,73 @@ st.markdown("""
 
 def clave_configurada(nombre: str) -> bool:
     return bool(os.getenv(nombre, "").strip())
+
+
+def normalizar_texto(valor: str) -> str:
+    texto = str(valor or "").lower().strip()
+    texto = unicodedata.normalize("NFKD", texto)
+    return "".join(c for c in texto if not unicodedata.combining(c))
+
+
+def extraer_filtros_consulta(
+    consulta: str,
+    posicion_sidebar: str,
+    liga_sidebar: str,
+    presupuesto_sidebar: float,
+    usar_presupuesto_sidebar: bool,
+) -> tuple[Optional[str], float, str]:
+    """Combina filtros del chat con los del sidebar, priorizando el texto escrito."""
+    texto = normalizar_texto(consulta)
+
+    posicion_detectada = None
+    posiciones = {
+        "Delantero": ["delantero", "atacante", "forward", "striker"],
+        "Centrocampista": ["centrocampista", "mediocampista", "midfielder", "medio"],
+        "Defensa": ["defensa", "defender", "central", "lateral"],
+        "Portero": ["portero", "goalkeeper", "keeper", "arquero"],
+    }
+    for posicion_objetivo, claves in posiciones.items():
+        if any(clave in texto for clave in claves):
+            posicion_detectada = posicion_objetivo
+            break
+
+    presupuesto_detectado = None
+    patrones_presupuesto = [
+        r"(?:maximo|max|hasta|presupuesto|menos de|por debajo de)\s*(?:de\s*)?(\d+(?:[.,]\d+)?)\s*(?:m|millones|m€)?",
+        r"(\d+(?:[.,]\d+)?)\s*(?:m€|m|millones)",
+    ]
+    for patron in patrones_presupuesto:
+        match = re.search(patron, texto)
+        if match:
+            presupuesto_detectado = float(match.group(1).replace(",", "."))
+            break
+
+    liga_detectada = None
+    ligas = {
+        "La Liga": ["la liga", "laliga", "espana", "barcelona", "barca", "real madrid", "atletico"],
+        "Premier League": ["premier", "inglaterra", "arsenal", "chelsea", "liverpool", "city", "united", "newcastle"],
+        "Serie A": ["serie a", "italia", "inter", "milan", "juventus", "napoli"],
+        "Bundesliga": ["bundesliga", "alemania", "bayern", "dortmund", "leverkusen"],
+        "Ligue 1": ["ligue 1", "francia", "psg", "lille", "monaco", "marseille"],
+    }
+    for liga_objetivo, claves in ligas.items():
+        if any(clave in texto for clave in claves):
+            liga_detectada = liga_objetivo
+            break
+
+    posicion_filtro = posicion_detectada or (
+        None if posicion_sidebar == "Cualquiera" else posicion_sidebar
+    )
+    liga_filtro = liga_detectada or (
+        "todas" if liga_sidebar == "Todas las ligas" else liga_sidebar
+    )
+    presupuesto_filtro = (
+        presupuesto_detectado
+        if presupuesto_detectado is not None
+        else presupuesto_sidebar if usar_presupuesto_sidebar else 9999
+    )
+
+    return posicion_filtro, presupuesto_filtro, liga_filtro
 
 
 OPENAI_CONFIGURADA = clave_configurada("OPENAI_API_KEY") or clave_configurada("GROQ_API_KEY")
@@ -254,18 +324,26 @@ if prompt:
                     })
                     contenido = respuesta.get("output", "No se pudo generar una respuesta.")
                 except Exception as e:
-                    _pos_filtro = None if posicion == "Cualquiera" else posicion
-                    _liga_filtro = "todas" if liga == "Todas las ligas" else liga
-                    _presupuesto_filtro = presupuesto if usar_presupuesto else 9999
+                    _pos_filtro, _presupuesto_filtro, _liga_filtro = extraer_filtros_consulta(
+                        prompt,
+                        posicion,
+                        liga,
+                        presupuesto,
+                        usar_presupuesto,
+                    )
                     contenido = (
                         "No se pudo usar el agente avanzado. "
                         f"Uso el modo demo local.\n\n{recomendar_fichajes_local(_pos_filtro, _presupuesto_filtro, _liga_filtro)[0]}\n\n"
                         f"Detalle técnico: {str(e)}"
                     )
             else:
-                _pos_filtro = None if posicion == "Cualquiera" else posicion
-                _liga_filtro = "todas" if liga == "Todas las ligas" else liga
-                _presupuesto_filtro = presupuesto if usar_presupuesto else 9999
+                _pos_filtro, _presupuesto_filtro, _liga_filtro = extraer_filtros_consulta(
+                    prompt,
+                    posicion,
+                    liga,
+                    presupuesto,
+                    usar_presupuesto,
+                )
                 contenido = recomendar_fichajes_local(_pos_filtro, _presupuesto_filtro, _liga_filtro)[0]
 
         st.markdown(contenido)
