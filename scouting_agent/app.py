@@ -101,9 +101,6 @@ def clave_configurada(nombre: str) -> bool:
     return bool(os.getenv(nombre, "").strip())
 
 
-<<<<<<< HEAD
-GROQ_CONFIGURADA = clave_configurada("GROQ_API_KEY")
-=======
 def normalizar_texto(valor: str) -> str:
     texto = str(valor or "").lower().strip()
     texto = unicodedata.normalize("NFKD", texto)
@@ -171,8 +168,7 @@ def extraer_filtros_consulta(
     return posicion_filtro, presupuesto_filtro, liga_filtro
 
 
-OPENAI_CONFIGURADA = clave_configurada("OPENAI_API_KEY") or clave_configurada("GROQ_API_KEY")
->>>>>>> 4d64ae6e6fbe2dd7210cc47e0536bb63191affb5
+GROQ_CONFIGURADA = clave_configurada("GROQ_API_KEY")
 API_FOOTBALL_CONFIGURADA = clave_configurada("API_FOOTBALL_KEY")
 
 
