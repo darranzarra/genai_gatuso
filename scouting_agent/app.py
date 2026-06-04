@@ -98,15 +98,14 @@ def clave_configurada(nombre: str) -> bool:
     return bool(os.getenv(nombre, "").strip())
 
 
-OPENAI_CONFIGURADA = clave_configurada("OPENAI_API_KEY") or clave_configurada("GROQ_API_KEY")
+GROQ_CONFIGURADA = clave_configurada("GROQ_API_KEY")
 API_FOOTBALL_CONFIGURADA = clave_configurada("API_FOOTBALL_KEY")
 
 
 # ── Sidebar ────────────────────────────────────────────────────────────────────
 with st.sidebar:
     st.markdown('<div class="main-title">⚽ SCOUT<br>AGENT</div>', unsafe_allow_html=True)
-    llm_label = "LLaMA 3.3 (Groq)" if clave_configurada("GROQ_API_KEY") else "GPT-4o"
-    st.markdown(f'<div class="main-subtitle">Powered by {llm_label} + LangChain</div>', unsafe_allow_html=True)
+    st.markdown('<div class="main-subtitle">Powered by LLaMA 3.3 (Groq) + LangChain</div>', unsafe_allow_html=True)
 
     st.markdown("---")
 
@@ -145,11 +144,11 @@ with st.sidebar:
     st.markdown("---")
 
     st.markdown('<div class="sidebar-label">Modo</div>', unsafe_allow_html=True)
-    if OPENAI_CONFIGURADA:
+    if GROQ_CONFIGURADA:
         usar_agente = st.toggle(
             "Usar agente LangChain",
             value=True,
-            help="Requiere OPENAI_API_KEY o GROQ_API_KEY. Si falta API_FOOTBALL_KEY, las tools usan el CSV local.",
+            help="Requiere GROQ_API_KEY. Si falta API_FOOTBALL_KEY, las tools usan el CSV local.",
         )
     else:
         usar_agente = False
@@ -182,7 +181,7 @@ with st.sidebar:
     st.markdown("---")
 
     st.markdown('<div class="sidebar-label">Tools disponibles</div>', unsafe_allow_html=True)
-    badges = ["buscar_jugadores", "comparar_stats", "valor_mercado", "filtrar_presupuesto", "recomendar_fichajes"]
+    badges = ["buscar_jugadores", "comparar_stats", "max_goleadores", "valor_mercado", "filtrar_presupuesto", "recomendar_fichajes"]
     badges_html = "".join([f'<span class="tool-badge">{b}</span>' for b in badges])
     st.markdown(badges_html, unsafe_allow_html=True)
 
